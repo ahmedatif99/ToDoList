@@ -53,6 +53,7 @@
         <ImageButton
             android:layout_width="300dp"
             android:layout_height="60dp"
+            android:onClick="login_new"
             android:background="@null"
             android:scaleType="fitXY"
             android:src="@drawable/btn" />
