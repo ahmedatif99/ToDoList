@@ -53,7 +53,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/relative"
         android:id="@+id/search_bar"
-        android:background="#7A60C5"
+        android:background="#8769DA"
         android:layout_marginTop="12dp"
         android:layout_alignParentRight="true"
         android:layout_alignParentLeft="true"
@@ -77,6 +77,8 @@
     <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:textColor="@color/white"
+        android:background="#8769DA"
         android:id="@+id/btn_add"
         android:text="Create new list here"
         android:layout_below="@+id/text_view"
@@ -90,7 +92,7 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentRight="true"
         android:drawableLeft="@drawable/ic_baseline_add_24"
-        android:background="#7A60C5"/>
+        />
 
     <androidx.recyclerview.widget.RecyclerView
         android:layout_width="wrap_content"
