@@ -41,8 +41,9 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
     public class ViewHolder extends RecyclerView.ViewHolder {
         public TextView item1;
 
-        public ViewHolder(@NonNull View itemView, Context context) {
+        public ViewHolder(@NonNull View itemView, Context c) {
             super(itemView);
+            context = c;
             item1 = itemView.findViewById(R.id.item1);
         }
     }

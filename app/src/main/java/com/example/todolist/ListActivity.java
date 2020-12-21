@@ -12,6 +12,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
+import com.google.android.material.snackbar.Snackbar;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,7 +36,6 @@ public class ListActivity extends AppCompatActivity {
         itemList = new ArrayList<>();
         recyclerViewAdapter = new RecyclerViewAdapter(this, itemList);
         recyclerView.setAdapter(recyclerViewAdapter);
-        recyclerViewAdapter.notifyDataSetChanged();
         createList.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -54,18 +55,21 @@ public class ListActivity extends AppCompatActivity {
         submit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Item item = new Item();
-                item.setListName(editText.getText().toString());
-                itemList.add(item);
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        alertDialog.dismiss();
-                        Intent i = new Intent(ListActivity.this, ListActivity.class);
-                        startActivity(i);
-                        finish();
-                    }
-                },1000);
+
+                if (!editText.getText().toString().isEmpty()){
+                    Item item = new Item();
+                    item.setListName(editText.getText().toString());
+                    itemList.add(item);
+
+                    recyclerViewAdapter.notifyDataSetChanged();
+                    alertDialog.dismiss();
+
+                }
+                else{
+                    Snackbar.make(v, "Pleas Enter List name ...", Snackbar.LENGTH_SHORT);
+                }
+
+
 
             }
         });
