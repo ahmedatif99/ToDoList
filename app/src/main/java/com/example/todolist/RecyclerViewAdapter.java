@@ -1,6 +1,7 @@
 package com.example.todolist;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -45,6 +46,17 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
             super(itemView);
             context = c;
             item1 = itemView.findViewById(R.id.item1);
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    int position = getAdapterPosition();
+                    Item item = itemList.get(position);
+                    Intent intent = new Intent(context, TaskActivity.class);
+                    intent.putExtra("ListName", item.getListName());
+
+                    context.startActivity(intent);
+                }
+            });
         }
     }
 }
