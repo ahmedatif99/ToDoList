@@ -50,23 +50,15 @@
             android:textSize="16sp" />
 
 
-        <ImageButton
+        <Button
             android:layout_width="300dp"
             android:layout_height="60dp"
             android:onClick="login_new"
-            android:background="@null"
-            android:scaleType="fitXY"
-            android:src="@drawable/btn" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_marginTop="-45dp"
-            android:clickable="false"
-            android:text="Log in"
+            android:background="@drawable/btn"
+            android:text="Login"
             android:textColor="#FFFF"
-            android:textSize="22sp"></TextView>
+            android:textSize="20sp" />
+
 
         <TextView
             android:layout_width="wrap_content"

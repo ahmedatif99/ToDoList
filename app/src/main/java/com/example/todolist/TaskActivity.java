@@ -31,7 +31,6 @@ public class TaskActivity extends AppCompatActivity {
 
     private AlertDialog alertDialog;
     private AlertDialog.Builder builder;
-    private LayoutInflater inflater;
 
 
     @Override

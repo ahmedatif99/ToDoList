@@ -1,7 +1,9 @@
 package com.example.todolist;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -11,10 +13,12 @@ import android.os.Handler;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import com.google.android.material.snackbar.Snackbar;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class ListActivity extends AppCompatActivity {
@@ -23,7 +27,9 @@ public class ListActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private AlertDialog alertDialog;
     private EditText editText;
+    private Button submit;
     private List<Item> itemList;
+    private AlertDialog.Builder builder;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,6 +42,8 @@ public class ListActivity extends AppCompatActivity {
         itemList = new ArrayList<>();
         recyclerViewAdapter = new RecyclerViewAdapter(this, itemList);
         recyclerView.setAdapter(recyclerViewAdapter);
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleCallback);
+        itemTouchHelper.attachToRecyclerView(recyclerView);
         createList.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -48,7 +56,7 @@ public class ListActivity extends AppCompatActivity {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         View view = getLayoutInflater().inflate(R.layout.pop_up, null);
         editText = view.findViewById(R.id.edit_text);
-        Button submit = view.findViewById(R.id.submit_list);
+        submit = view.findViewById(R.id.submit_list);
         builder.setView(view);
         alertDialog = builder.create();
         alertDialog.show();
@@ -74,4 +82,91 @@ public class ListActivity extends AppCompatActivity {
             }
         });
     }
+
+    Item deletedItem = null;
+    Item newItem = null;
+
+    ItemTouchHelper.SimpleCallback simpleCallback = new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP
+            | ItemTouchHelper.DOWN | ItemTouchHelper.START | ItemTouchHelper.END,
+            ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
+        @Override
+        public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+
+            int fromPosition = viewHolder.getAdapterPosition();
+            int toPosition = target.getAdapterPosition();
+
+            Collections.swap(itemList, fromPosition, toPosition);
+
+            recyclerView.getAdapter().notifyItemMoved(fromPosition, toPosition);
+
+            return false;
+        }
+
+        @Override
+        public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+
+            int position = viewHolder.getAdapterPosition();
+
+            switch (direction) {
+                case ItemTouchHelper.LEFT:
+                    deletedItem = itemList.get(position);
+                    itemList.remove(deletedItem);
+                    recyclerViewAdapter.notifyItemRemoved(position);
+                    String nameList = deletedItem.getListName();
+                    Snackbar.make(recyclerView, nameList + " DELETED", Snackbar.LENGTH_LONG)
+                            .setAction("Undo", new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    itemList.add(position, deletedItem);
+                                    recyclerViewAdapter.notifyItemInserted(position);
+                                }
+                            }).show();
+                    break;
+
+                case ItemTouchHelper.RIGHT:
+                    newItem = itemList.get(position);
+
+                    builder = new AlertDialog.Builder(ListActivity.this);
+                    View view = getLayoutInflater().inflate(R.layout.pop_up, null);
+
+                    TextView title = view.findViewById(R.id.typing_name);
+
+                    editText = view.findViewById(R.id.edit_text);
+                    submit = view.findViewById(R.id.submit_list);
+
+                    title.setText("Edit Item : ");
+                    editText.setText(newItem.getListName());
+                    submit.setText("Update");
+
+                    builder.setView(view);
+                    alertDialog = builder.create();
+                    alertDialog.show();
+
+
+                    submit.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            //update our item
+                            newItem.setListName(editText.getText().toString());
+
+                            if (!editText.getText().toString().isEmpty()){
+
+                                itemList.remove(newItem);
+                                recyclerViewAdapter.notifyItemRemoved(position);
+
+                                itemList.add(position, newItem);
+                                recyclerViewAdapter.notifyItemInserted(position);
+                                alertDialog.dismiss();
+
+                                Snackbar.make(view,"Updated done",Snackbar.LENGTH_SHORT).show();
+                            }else {
+                                Snackbar.make(view,"Field Empty",Snackbar.LENGTH_SHORT).show();
+                            }
+                        }
+                    });
+
+                    break;
+            }
+        }
+    };
 }

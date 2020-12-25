@@ -19,7 +19,7 @@
                 android:layout_height="wrap_content"
                 android:id="@+id/typing_name"
                 android:text="List Name"
-                android:textColor="@color/white"
+                android:textColor="#FFFF"
                 android:textSize="18sp"/>
 
             <EditText
@@ -31,8 +31,8 @@
                 android:padding="15dp"
                 android:layout_marginTop="8dp"
                 android:hint="Enter List Name ... "
-                android:textColorHint="@color/white"
-                android:textColor="@color/white"
+                android:textColorHint="#FFFF"
+                android:textColor="#FFFF"
                 android:layout_centerHorizontal="true"
                 />
 
@@ -44,7 +44,7 @@
                 android:text="Submit"
                 android:layout_centerHorizontal="true"
                 android:background="@drawable/btn"
-                android:textColor="@color/white"
+                android:textColor="#FFFF"
                 android:layout_margin="15dp"
 
                 />
