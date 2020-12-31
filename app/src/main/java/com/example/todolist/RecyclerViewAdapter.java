@@ -53,6 +53,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
                     Item item = itemList.get(position);
                     Intent intent = new Intent(context, TaskActivity.class);
                     intent.putExtra("ListName", item.getListName());
+                    intent.putExtra("ItemId", item.getId());
 
                     context.startActivity(intent);
                 }

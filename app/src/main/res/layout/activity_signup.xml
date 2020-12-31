@@ -27,6 +27,7 @@
         <EditText
             android:layout_width="300dp"
             android:layout_height="50dp"
+            android:id="@+id/ac_name"
             android:layout_marginBottom="20dp"
             android:background="#633DCF"
             android:hint="Your Name"
@@ -36,6 +37,7 @@
         <EditText
             android:layout_width="300dp"
             android:layout_height="50dp"
+            android:id="@+id/ac_password"
             android:layout_marginBottom="20dp"
             android:background="#633DCF"
             android:hint="Password"
@@ -45,6 +47,7 @@
         <EditText
             android:layout_width="300dp"
             android:layout_height="50dp"
+            android:id="@+id/ac_email"
             android:layout_marginBottom="35dp"
             android:background="#633DCF"
             android:hint="Your Email address"
@@ -55,6 +58,7 @@
         <Button
             android:layout_width="300dp"
             android:layout_height="60dp"
+            android:id="@+id/create_ac"
             android:background="@drawable/btn"
             android:text="Create Account"
             android:textColor="#FFFF"

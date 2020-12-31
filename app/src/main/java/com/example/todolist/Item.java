@@ -1,22 +1,23 @@
 package com.example.todolist;
 
 public class Item {
-    private int id;
+    private String id;
     private String listName;
+
 
     public Item(){
 
     }
-    public Item(int id, String listName) {
-        this.id = id;
-        this.listName = listName;
-    }
+//    public Item(String id, String listName) {
+//        this.id = id;
+//        this.listName = listName;
+//    }
 
-    public int getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(String id) {
         this.id = id;
     }
 

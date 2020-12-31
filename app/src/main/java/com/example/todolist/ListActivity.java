@@ -9,13 +9,22 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,8 +37,10 @@ public class ListActivity extends AppCompatActivity {
     private AlertDialog alertDialog;
     private EditText editText;
     private Button submit;
+    private TextView logout;
     private List<Item> itemList;
     private AlertDialog.Builder builder;
+    private FirebaseAuth mAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,12 +55,52 @@ public class ListActivity extends AppCompatActivity {
         recyclerView.setAdapter(recyclerViewAdapter);
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleCallback);
         itemTouchHelper.attachToRecyclerView(recyclerView);
+
+        /*Data SnapShot*/
+        mAuth = FirebaseAuth.getInstance();
+        FirebaseUser user = mAuth.getCurrentUser();
+        String uid = user.getUid();
+        FirebaseDatabase.getInstance().getReference("Users").child(uid).child("items").
+                addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        itemList.clear();
+                        for(DataSnapshot snapshot: dataSnapshot.getChildren()){
+                            Item items = snapshot.getValue(Item.class);
+                            itemList.add(items);
+                        }
+                        recyclerViewAdapter.notifyDataSetChanged();
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError error) {
+                        // Failed to read value
+                    }
+                });
+        /*Data SnapShot*/
+
         createList.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 popUpDialog();
             }
         });
+
+        logout = findViewById(R.id.logout);
+        logout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                FirebaseAuth.getInstance().signOut();
+                Toast.makeText(ListActivity.this, "Signed Out", Toast.LENGTH_SHORT).show();
+                Intent i = new Intent(ListActivity.this, LoginActivity.class);
+                startActivity(i);
+            }
+        });
+
+
+
+
+
     }
 
     private void popUpDialog() {
@@ -65,16 +116,29 @@ public class ListActivity extends AppCompatActivity {
             public void onClick(View v) {
 
                 if (!editText.getText().toString().isEmpty()){
+
+                    mAuth = FirebaseAuth.getInstance();
+                    FirebaseUser user = mAuth.getCurrentUser();
+                    String uid = user.getUid();
+
+
+
                     Item item = new Item();
                     item.setListName(editText.getText().toString());
+
+
+                    String itemId = FirebaseDatabase.getInstance().getReference("Users").child(uid).child("items").push().getKey();
+                    item.setId(itemId);
                     itemList.add(item);
+                    FirebaseDatabase.getInstance().getReference("Users").child(uid).child("items").child(itemId).setValue(item);
+                    Snackbar.make(v, "Added Successfully *__^", Snackbar.LENGTH_SHORT).show();
 
                     recyclerViewAdapter.notifyDataSetChanged();
                     alertDialog.dismiss();
 
                 }
                 else{
-                    Snackbar.make(v, "Pleas Enter List name ...", Snackbar.LENGTH_SHORT);
+                    Snackbar.make(v, "Pleas Enter List name ...", Snackbar.LENGTH_SHORT).show();
                 }
 
 
@@ -85,6 +149,8 @@ public class ListActivity extends AppCompatActivity {
 
     Item deletedItem = null;
     Item newItem = null;
+
+
 
     ItemTouchHelper.SimpleCallback simpleCallback = new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP
             | ItemTouchHelper.DOWN | ItemTouchHelper.START | ItemTouchHelper.END,

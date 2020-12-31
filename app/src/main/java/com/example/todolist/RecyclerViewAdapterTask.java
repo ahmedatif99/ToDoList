@@ -12,6 +12,10 @@ import android.widget.CompoundButton;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.FirebaseDatabase;
+
 import java.util.List;
 
 
@@ -42,8 +46,20 @@ public class RecyclerViewAdapterTask extends RecyclerView.Adapter<RecyclerViewAd
             viewHolder.checkBox.setPaintFlags(viewHolder.checkBox.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
         }
         viewHolder.checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                String uid = user.getUid();
+
+                Task newTask = new Task();
+                newTask.setIsChecked(isChecked);
+                newTask.setTaskName(taskEntity.getTaskName());
+                newTask.setTaskId(taskEntity.getTaskId());
+                newTask.setListId(taskEntity.getListId());
+                FirebaseDatabase.getInstance().getReference("Users").child(uid).child("items").child(taskEntity.getListId()).child("Tasks").child(taskEntity.getTaskId()).setValue(newTask);
+
+
                 taskEntity.setIsChecked(isChecked);
                 viewHolder.checkBox.setSelected(isChecked);
                 if (isChecked) {

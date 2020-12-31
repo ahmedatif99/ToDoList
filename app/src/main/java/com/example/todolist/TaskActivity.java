@@ -15,6 +15,12 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -31,6 +37,7 @@ public class TaskActivity extends AppCompatActivity {
 
     private AlertDialog alertDialog;
     private AlertDialog.Builder builder;
+    private String itemId;
 
 
     @Override
@@ -42,6 +49,7 @@ public class TaskActivity extends AppCompatActivity {
         Bundle bundle = getIntent().getExtras();
         if (bundle != null) {
             String listName = bundle.getString("ListName");
+            itemId = bundle.getString("ItemId");
 
             detsListName.setText(listName + " List");
         }
@@ -54,6 +62,31 @@ public class TaskActivity extends AppCompatActivity {
 
         recyclerViewAdapterTask = new RecyclerViewAdapterTask(this, taskList);
         recyclerViewTask.setAdapter(recyclerViewAdapterTask);
+
+
+        /*Data SnapShot*/
+        FirebaseAuth mAuth = FirebaseAuth.getInstance();
+        FirebaseUser user = mAuth.getCurrentUser();
+        String uid = user.getUid();
+        FirebaseDatabase.getInstance().getReference("Users").child(uid).child("items").child(itemId).child("Tasks").
+                addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        taskList.clear();
+                        for(DataSnapshot snapshot: dataSnapshot.getChildren()){
+                            Task task = snapshot.getValue(Task.class);
+                            taskList.add(task);
+                        }
+                        recyclerViewAdapterTask.notifyDataSetChanged();
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError error) {
+                        // Failed to read value
+                    }
+                });
+        /*Data SnapShot*/
+
 
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleCallback);
         itemTouchHelper.attachToRecyclerView(recyclerViewTask);
@@ -96,7 +129,24 @@ public class TaskActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if (!itemTaskName.getText().toString().isEmpty()) {
-                    saveItem(v);
+                    FirebaseAuth mAuth = FirebaseAuth.getInstance();
+                    FirebaseUser user = mAuth.getCurrentUser();
+                    String uid = user.getUid();
+
+                    Task task = new Task();
+                    task.setTaskName(itemTaskName.getText().toString());
+                    task.setIsChecked(false);
+                    task.setListId(itemId);
+
+                    String tasksId = FirebaseDatabase.getInstance().getReference("Users").child(uid).child("items").child(itemId).push().getKey();
+                    taskList.add(task);
+                    task.setTaskId(tasksId);
+                    FirebaseDatabase.getInstance().getReference("Users").child(uid).child("items").child(itemId).child("Tasks").child(tasksId).setValue(task);
+                    Snackbar.make(v, "Added Successfully *__^", Snackbar.LENGTH_SHORT).show();
+
+                    recyclerViewAdapterTask.notifyDataSetChanged();
+                    alertDialog.dismiss();
+//                    saveItem(v);
                 } else {
                     Snackbar.make(v, "Empty Field not Allowed!", Snackbar.LENGTH_SHORT).show();
                 }
@@ -104,17 +154,17 @@ public class TaskActivity extends AppCompatActivity {
         });
     }
 
-    private void saveItem(View v) {
-
-        String newItemNOT = itemTaskName.getText().toString().trim();
-
-        Task task = new Task(newItemNOT, false);
-        taskList.add(0, task);
-        recyclerViewAdapterTask.notifyItemInserted(0);
-        recyclerViewTask.smoothScrollToPosition(0);
-
-        alertDialog.dismiss();
-    }
+//    private void saveItem(View v) {
+//
+//        String newItemNOT = itemTaskName.getText().toString().trim();
+//
+//        Task task = new Task(newItemNOT, false);
+//        taskList.add(0, task);
+//        recyclerViewAdapterTask.notifyItemInserted(0);
+//        recyclerViewTask.smoothScrollToPosition(0);
+//
+//        alertDialog.dismiss();
+//    }
 
     public void onCheckboxClicked(View view) {
     }

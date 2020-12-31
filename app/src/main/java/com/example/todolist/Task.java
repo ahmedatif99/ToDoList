@@ -3,14 +3,33 @@ package com.example.todolist;
 public class Task {
     private String taskName;
     private Boolean isChecked;
+    private String taskId;
+
+    private String listId;
+
+    public String getListId() {
+        return listId;
+    }
+
+    public void setListId(String listId) {
+        this.listId = listId;
+    }
+
+    public String getTaskId() {
+        return taskId;
+    }
+
+    public void setTaskId(String taskId) {
+        this.taskId = taskId;
+    }
 
     public Task() {
     }
 
-    public Task(String taskName, Boolean isChecked) {
-        this.taskName = taskName;
-        this.isChecked = isChecked;
-    }
+//    public Task(String taskName, Boolean isChecked) {
+//        this.taskName = taskName;
+//        this.isChecked = isChecked;
+//    }
 
     public String getTaskName() {
         return taskName;
