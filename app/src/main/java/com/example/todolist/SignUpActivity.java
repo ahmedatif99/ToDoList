@@ -28,6 +28,8 @@ public class SignUpActivity extends AppCompatActivity {
     private EditText name, password, email;
     private Button createAc;
     private FirebaseAuth mAuth;
+    private FirebaseAuth.AuthStateListener authStateListener;
+    private FirebaseUser firebaseUser;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -36,6 +38,15 @@ public class SignUpActivity extends AppCompatActivity {
 
         mAuth = FirebaseAuth.getInstance();
 
+        authStateListener = new FirebaseAuth.AuthStateListener() {
+            @Override
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                      firebaseUser = firebaseAuth.getCurrentUser();
+                      if(firebaseUser != null){
+
+                      }else{}
+            }
+        };
         name = findViewById(R.id.ac_name);
         email = findViewById(R.id.ac_email);
         password = findViewById(R.id.ac_password);
@@ -54,6 +65,12 @@ public class SignUpActivity extends AppCompatActivity {
         startActivity(i2);
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        firebaseUser = mAuth.getCurrentUser();
+        mAuth.addAuthStateListener(authStateListener);
+    }
 
     private void doSignUp (String email, String password){
         mAuth.createUserWithEmailAndPassword(email, password)

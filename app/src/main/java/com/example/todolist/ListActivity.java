@@ -8,11 +8,14 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.text.Html;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -41,6 +44,11 @@ public class ListActivity extends AppCompatActivity {
     private List<Item> itemList;
     private AlertDialog.Builder builder;
     private FirebaseAuth mAuth;
+    private SearchView searchView;
+
+    private FirebaseAuth.AuthStateListener authStateListener;
+    private FirebaseUser firebaseUser;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,24 +59,34 @@ public class ListActivity extends AppCompatActivity {
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         itemList = new ArrayList<>();
-        recyclerViewAdapter = new RecyclerViewAdapter(this, itemList);
-        recyclerView.setAdapter(recyclerViewAdapter);
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleCallback);
         itemTouchHelper.attachToRecyclerView(recyclerView);
 
+        authStateListener = new FirebaseAuth.AuthStateListener() {
+            @Override
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                firebaseUser = firebaseAuth.getCurrentUser();
+                if (firebaseUser != null) {
+
+                } else {
+                }
+            }
+        };
         /*Data SnapShot*/
         mAuth = FirebaseAuth.getInstance();
-        FirebaseUser user = mAuth.getCurrentUser();
-        String uid = user.getUid();
+        firebaseUser = mAuth.getCurrentUser();
+        String uid = firebaseUser.getUid();
         FirebaseDatabase.getInstance().getReference("Users").child(uid).child("items").
                 addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                         itemList.clear();
-                        for(DataSnapshot snapshot: dataSnapshot.getChildren()){
+                        for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                             Item items = snapshot.getValue(Item.class);
                             itemList.add(items);
                         }
+                        recyclerViewAdapter = new RecyclerViewAdapter(ListActivity.this, itemList);
+                        recyclerView.setAdapter(recyclerViewAdapter);
                         recyclerViewAdapter.notifyDataSetChanged();
                     }
 
@@ -97,9 +115,23 @@ public class ListActivity extends AppCompatActivity {
             }
         });
 
+        searchView = findViewById(R.id.search_bar);
+        searchView.setQueryHint(Html.fromHtml("<font color = #ffffff>" + "Search" + "</font>"));
+        int id = searchView.getContext().getResources().getIdentifier("android:id/search_src_text", null, null);
+        TextView textView = (TextView)searchView.findViewById(id);
+        textView.setTextColor(Color.WHITE);
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return false;
+            }
 
-
-
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                recyclerViewAdapter.getFilter().filter(newText);
+                return false;
+            }
+        });
 
     }
 
@@ -115,17 +147,15 @@ public class ListActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                if (!editText.getText().toString().isEmpty()){
+                if (!editText.getText().toString().isEmpty()) {
 
                     mAuth = FirebaseAuth.getInstance();
                     FirebaseUser user = mAuth.getCurrentUser();
                     String uid = user.getUid();
 
 
-
                     Item item = new Item();
                     item.setListName(editText.getText().toString());
-
 
                     String itemId = FirebaseDatabase.getInstance().getReference("Users").child(uid).child("items").push().getKey();
                     item.setId(itemId);
@@ -136,13 +166,9 @@ public class ListActivity extends AppCompatActivity {
                     recyclerViewAdapter.notifyDataSetChanged();
                     alertDialog.dismiss();
 
-                }
-                else{
+                } else {
                     Snackbar.make(v, "Pleas Enter List name ...", Snackbar.LENGTH_SHORT).show();
                 }
-
-
-
             }
         });
     }
@@ -151,10 +177,8 @@ public class ListActivity extends AppCompatActivity {
     Item newItem = null;
 
 
-
     ItemTouchHelper.SimpleCallback simpleCallback = new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP
-            | ItemTouchHelper.DOWN | ItemTouchHelper.START | ItemTouchHelper.END,
-            ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
+            | ItemTouchHelper.DOWN | ItemTouchHelper.START | ItemTouchHelper.END, ItemTouchHelper.RIGHT) {
         @Override
         public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
 
@@ -174,21 +198,6 @@ public class ListActivity extends AppCompatActivity {
             int position = viewHolder.getAdapterPosition();
 
             switch (direction) {
-                case ItemTouchHelper.LEFT:
-                    deletedItem = itemList.get(position);
-                    itemList.remove(deletedItem);
-                    recyclerViewAdapter.notifyItemRemoved(position);
-                    String nameList = deletedItem.getListName();
-                    Snackbar.make(recyclerView, nameList + " DELETED", Snackbar.LENGTH_LONG)
-                            .setAction("Undo", new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    itemList.add(position, deletedItem);
-                                    recyclerViewAdapter.notifyItemInserted(position);
-                                }
-                            }).show();
-                    break;
-
                 case ItemTouchHelper.RIGHT:
                     newItem = itemList.get(position);
 
@@ -214,19 +223,14 @@ public class ListActivity extends AppCompatActivity {
                         public void onClick(View v) {
                             //update our item
                             newItem.setListName(editText.getText().toString());
-
-                            if (!editText.getText().toString().isEmpty()){
-
-                                itemList.remove(newItem);
-                                recyclerViewAdapter.notifyItemRemoved(position);
-
-                                itemList.add(position, newItem);
-                                recyclerViewAdapter.notifyItemInserted(position);
+                            newItem.setId(newItem.getId());
+                            String uid = firebaseUser.getUid();
+                            if (!editText.getText().toString().isEmpty()) {
+                                FirebaseDatabase.getInstance().getReference("Users").child(uid).child("items").child(newItem.getId()).child("listName").setValue(editText.getText().toString());
+                                recyclerViewAdapter.notifyItemChanged(position);
                                 alertDialog.dismiss();
-
-                                Snackbar.make(view,"Updated done",Snackbar.LENGTH_SHORT).show();
-                            }else {
-                                Snackbar.make(view,"Field Empty",Snackbar.LENGTH_SHORT).show();
+                            } else {
+                                Snackbar.make(view, "Field Empty", Snackbar.LENGTH_SHORT).show();
                             }
                         }
                     });
@@ -235,4 +239,20 @@ public class ListActivity extends AppCompatActivity {
             }
         }
     };
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        firebaseUser = mAuth.getCurrentUser();
+        mAuth.addAuthStateListener(authStateListener);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (mAuth != null) {
+            mAuth.removeAuthStateListener(authStateListener);
+        }
+    }
+
 }

@@ -49,9 +49,12 @@
 
     </RelativeLayout>
 
-    <androidx.appcompat.widget.SearchView
+    <SearchView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:queryHint="Search"
+        android:searchIcon="@drawable/ic_baseline_search_24"
+        android:searchHintIcon="@drawable/ic_baseline_search_24"
         android:layout_below="@id/relative"
         android:id="@+id/search_bar"
         android:background="#8769DA"

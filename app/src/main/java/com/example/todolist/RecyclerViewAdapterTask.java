@@ -8,6 +8,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.Filter;
+import android.widget.Filterable;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -16,17 +19,52 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
-public class RecyclerViewAdapterTask extends RecyclerView.Adapter<RecyclerViewAdapterTask.ViewHolder> {
+public class RecyclerViewAdapterTask extends RecyclerView.Adapter<RecyclerViewAdapterTask.ViewHolder> implements Filterable {
     private Context context;
     private List<Task> taskList;
+    private List<Task> searchTask;
 
     public RecyclerViewAdapterTask(Context context, List<Task> taskList) {
         this.context = context;
         this.taskList = taskList;
+        searchTask = new ArrayList<>(taskList);
     }
+    @Override
+    public Filter getFilter(){
+        return taskSearch;
+    }
+
+    private Filter taskSearch = new Filter() {
+        @Override
+        protected FilterResults performFiltering(CharSequence constraint) {
+            List<Task> filteredTask = new ArrayList<>();
+            if(constraint == null || constraint.length() == 0){
+                filteredTask.addAll(searchTask);
+            }else {
+                String filterPattern = constraint.toString().toLowerCase().trim();
+                for (Task task : searchTask){
+                    if (task.getTaskName().toLowerCase().contains(filterPattern)){
+                        filteredTask.add(task);
+                    }
+                }
+            }
+            FilterResults filterResults = new FilterResults();
+            filterResults.values = filteredTask;
+
+            return filterResults;
+        }
+
+        @Override
+        protected void publishResults(CharSequence constraint, FilterResults results) {
+            taskList.clear();
+            taskList.addAll((List)results.values);
+            notifyDataSetChanged();
+        }
+    };
 
     @NonNull
     @Override
@@ -71,6 +109,7 @@ public class RecyclerViewAdapterTask extends RecyclerView.Adapter<RecyclerViewAd
                 }
             }
         });
+
     }
 
     @Override

@@ -5,20 +5,25 @@ import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.ViewHolder> {
+public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.ViewHolder> implements Filterable {
     private Context context;
     private List<Item> itemList;
+    private List<Item> searchItemList;
 
     public RecyclerViewAdapter(Context context, List<Item> itemList){
         this.context = context;
         this.itemList = itemList;
+        searchItemList = new ArrayList<>(itemList);
     }
     @NonNull
     @Override
@@ -60,4 +65,53 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
             });
         }
     }
+
+    @Override
+    public Filter getFilter(){
+        return itemSearch;
+    }
+
+    private Filter itemSearch = new Filter() {
+        @Override
+        protected FilterResults performFiltering(CharSequence constraint) {
+            List<Item> filteredList = new ArrayList<>();
+            if(constraint == null || constraint.length() == 0){
+                filteredList.addAll(searchItemList);
+            }else {
+                String filterPattern = constraint.toString().toLowerCase().trim();
+                for (Item item : searchItemList){
+                    if (item.getListName().toLowerCase().contains(filterPattern)){
+                        filteredList.add(item);
+                    }
+                }
+            }
+            FilterResults filterResults = new FilterResults();
+            filterResults.values = filteredList;
+
+            return filterResults;
+        }
+
+        @Override
+        protected void publishResults(CharSequence constraint, FilterResults results) {
+            itemList.clear();
+            itemList.addAll((List)results.values);
+            notifyDataSetChanged();
+        }
+    };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
