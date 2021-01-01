@@ -27,8 +27,10 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 public class TaskActivity extends AppCompatActivity {
@@ -44,7 +46,6 @@ public class TaskActivity extends AppCompatActivity {
     private AlertDialog.Builder builder;
     private String itemId;
     private TextView deleteList;
-    private LayoutInflater inflater;
     private SearchView searchView;
     private FirebaseUser user;
     private FirebaseAuth mAuth;
@@ -122,51 +123,10 @@ public class TaskActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 String uid = user.getUid();
-                        FirebaseDatabase.getInstance().getReference("Users").child(uid).child("items").child(itemId).removeValue();
-                        finish();
+                FirebaseDatabase.getInstance().getReference("Users").child(uid).child("items").child(itemId).removeValue();
+                finish();
             }
         });
-//        deleteList.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                builder = new AlertDialog.Builder(TaskActivity.this);
-//                inflater = LayoutInflater.from(TaskActivity.this);
-//                View view = inflater.inflate(R.layout.confirm_pop_up, null);
-//                Button yes = findViewById(R.id.conf_yes_button);
-//                Button no = findViewById(R.id.conf_no_button);
-//                builder.setView(view);
-//                alertDialog = builder.create();
-//                alertDialog.show();
-//
-//                yes.setOnClickListener(new View.OnClickListener() {
-//                    @Override
-//                    public void onClick(View v) {
-//                        String uid = user.getUid();
-//                        FirebaseDatabase.getInstance().getReference("Users").child(uid).child("items").child(itemId).removeValue()
-//                                .addOnSuccessListener(new OnSuccessListener<Void>() {
-//                                    @Override
-//                                    public void onSuccess(Void aVoid) {
-//                                        alertDialog.dismiss();
-//                                        finish();
-//                                    }
-//                                })
-//                                .addOnFailureListener(new OnFailureListener() {
-//                                    @Override
-//                                    public void onFailure(@NonNull Exception e) {
-//
-//                                    }
-//                                });
-//                    }
-//                });
-//
-//                no.setOnClickListener(new View.OnClickListener() {
-//                    @Override
-//                    public void onClick(View v) {
-//                        alertDialog.dismiss();
-//                    }
-//                });
-//            }
-//        });
 
         searchView = findViewById(R.id.tasks_search);
         searchView.setQueryHint(Html.fromHtml("<font color = #ffffff>" + "Search" + "</font>"));
@@ -215,8 +175,11 @@ public class TaskActivity extends AppCompatActivity {
                     task.setTaskName(itemTaskName.getText().toString());
                     task.setIsChecked(false);
                     task.setListId(itemId);
-
+                    DateFormat dateFormat = DateFormat.getDateTimeInstance();
+                    String date = dateFormat.format(new Date().getTime());
+                    task.setTimeAdd(date);
                     String tasksId = FirebaseDatabase.getInstance().getReference("Users").child(uid).child("items").child(itemId).child("Tasks").push().getKey();
+
                     taskList.add(task);
                     task.setTaskId(tasksId);
                     FirebaseDatabase.getInstance().getReference("Users").child(uid).child("items").child(itemId).child("Tasks").child(tasksId).setValue(task);

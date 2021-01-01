@@ -95,7 +95,7 @@ public class RecyclerViewAdapterTask extends RecyclerView.Adapter<RecyclerViewAd
                 newTask.setTaskName(taskEntity.getTaskName());
                 newTask.setTaskId(taskEntity.getTaskId());
                 newTask.setListId(taskEntity.getListId());
-                FirebaseDatabase.getInstance().getReference("Users").child(uid).child("items").child(taskEntity.getListId()).child("Tasks").child(taskEntity.getTaskId()).setValue(newTask);
+                FirebaseDatabase.getInstance().getReference("Users").child(uid).child("items").child(taskEntity.getListId()).child("Tasks").child(taskEntity.getTaskId()).child("isChecked").setValue(newTask.getIsChecked());
 
 
                 taskEntity.setIsChecked(isChecked);
@@ -132,6 +132,9 @@ public class RecyclerViewAdapterTask extends RecyclerView.Adapter<RecyclerViewAd
                     Task task = taskList.get(position);
                     Intent intent = new Intent(context, ViewTaskActivity.class);
                     intent.putExtra("taskName", task.getTaskName());
+                    intent.putExtra("timeAdd", task.getTimeAdd());
+                    intent.putExtra("listId", task.getListId());
+                    intent.putExtra("taskId", task.getTaskId());
 
                     context.startActivity(intent);
                 }

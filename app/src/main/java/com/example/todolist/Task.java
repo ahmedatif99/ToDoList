@@ -4,6 +4,15 @@ public class Task {
     private String taskName;
     private Boolean isChecked;
     private String taskId;
+    private String timeAdd;
+
+    public String getTimeAdd() {
+        return timeAdd;
+    }
+
+    public void setTimeAdd(String timeAdd) {
+        this.timeAdd = timeAdd;
+    }
 
     private String listId;
 
